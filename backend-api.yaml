@@ -1,0 +1,504 @@
+openapi: 3.0.3
+info:
+  title: Swagger Cloud Based Video Conferencing Backend - OpenAPI 3.0
+  description: This api spec contains a list of API urls that enable video conferencing
+  # termsOfService: http://swagger.io/terms/
+#   contact:
+#     email: apiteam@swagger.io
+#   license:
+#     name: Apache 2.0
+#     url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.11
+# externalDocs:
+#   description: Find out more about Swagger
+#   url: http://swagger.io
+# servers:
+#   - url: https://petstore3.swagger.io/api/v3
+
+tags:
+  - name: Room
+    description: Everything about meeting rooms
+  
+  - name: User
+    description: Access to Conferencing App Users
+    
+  - name: Meeting Details
+    description: Access to User's Meeting Details
+paths:
+  /user:
+    post:
+      tags:
+        - user
+      summary: Create user
+      description: This can only be done by the logged in user.
+      operationId: createUser
+      requestBody:
+        description: Created user object
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/User'
+          
+      responses:
+        default:
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+      
+  /user/login:
+    get:
+      tags:
+        - user
+      summary: Authenticate user and return OK
+      description: ''
+      operationId: loginUser
+      parameters:
+        - name: email
+          in: query
+          description: The email for login
+          required: false
+          schema:
+            type: string
+        - name: password
+          in: query
+          description: The password for login in clear text
+          required: false
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          headers:
+            X-Rate-Limit:
+              description: calls per hour allowed by the user
+              schema:
+                type: integer
+                format: int32
+            X-Expires-After:
+              description: date in UTC when token expires
+              schema:
+                type: string
+                format: date-time
+          content:
+            application/xml:
+              schema:
+                type: string
+            application/json:
+              schema:
+                type: string
+        '400':
+          description: Invalid email/password supplied
+  /user/logout:
+    get:
+      tags:
+        - user
+      summary: Logs out current logged in user session
+      description: ''
+      operationId: logoutUser
+      parameters: []
+      responses:
+        default:
+          description: successful operation
+  /user/{id}:
+    get:
+      tags:
+        - user
+      summary: Get user by Id
+      description: ''
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          description: id of the user
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'          
+            
+        '400':
+          description: Invalid username supplied
+        '404':
+          description: User not found
+  /room:
+    post:
+      tags:
+        - room
+      summary: Add a new room
+      description: Add a new room
+      operationId: addRoom
+      requestBody:
+        description: Create a new Room
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Room'
+        required: true
+      responses:
+        '200':
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Room'          
+            
+        '405':
+          description: Invalid input
+      
+  /room/{roomId}:
+    get:
+      tags:
+        - room
+      summary: Finds Room by roomId
+      description: Room Data by roomId
+      operationId: findRoomById
+      parameters:
+        - name: roomId
+          in: path
+          description: Room Id
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                  $ref: '#/components/schemas/Room'          
+            
+        '400':
+          description: Invalid Room Id
+    
+  /rooms/{roomId}/broadcasters:
+    post:
+      tags:
+        - room
+      summary: Create a Broadcaster in the room ie a participant
+      description: This creates a WebRTC client in the backend in mediasoup
+      operationId: create a broadcaster in romm
+      parameters:
+        - name: roomId
+          in: path
+          description: Room Id
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Broadcaster'          
+    
+        '400':
+          description: Invalid tag value
+
+  /room/{roomId}/broadcaster/{broadcasterId}:
+    delete:
+      tags:
+        - room
+      summary: Deletes a Broadcaster
+      description: An API to remove the participitant from the room, eg when he leaves the meeting
+      operationId: deleteABroadcaster
+      parameters:
+        - name: roomId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: broadcasterId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '400':
+          description: Invalid BroadcasterId
+  
+  /rooms/{roomId}/broadcasters/{broadcasterId}/produceAudio:
+    post:
+      tags:
+        - room
+      summary: Create a Audio producer for a broadcaster 
+      description: This creates a mediasoup audio producer
+      parameters:
+        - name: roomId
+          in: path
+          description: Room Id
+          required: true
+          schema:
+            type: integer
+        - name: broadcasterId
+          in: path
+          description: Broadcaster Id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudioProducer'
+                
+  /rooms/{roomId}/broadcasters/{broadcasterId}/produceVideo:
+    post:
+      tags:
+        - room
+      summary: Create a Video producer for a broadcaster 
+      description: This creates a mediasoup video producer
+      parameters:
+        - name: roomId
+          in: path
+          description: Room Id
+          required: true
+          schema:
+            type: integer
+        - name: broadcasterId
+          in: path
+          description: Broadcaster Id
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoProducer'
+    
+  /rooms/{roomId}/broadcasters/{broadcasterId}/consumeVideo:
+    post:
+      tags:
+        - room
+      summary: Create a Video Consumer for a broadcaster 
+      description: This creates a mediasoup Video consumer
+      parameters:
+        - name: roomId
+          in: path
+          description: Room Id
+          required: true
+          schema:
+            type: integer
+        - name: broadcasterId
+          in: path
+          description: Broadcaster Id
+          required: true
+          schema:
+            type: integer
+      # requestBody:
+      #   content:
+      #     application/octet-stream:
+      #       schema:
+      #         type: string
+      #         format: binary
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VideoConsumer'
+                
+  /rooms/{roomId}/broadcasters/{broadcasterId}/consumeAudio:
+    post:
+      tags:
+        - room
+      summary: Create a Audio Consumer for a broadcaster 
+      description: This creates a mediasoup Audio consumer
+      parameters:
+        - name: roomId
+          in: path
+          description: Room Id
+          required: true
+          schema:
+            type: integer
+        - name: broadcasterId
+          in: path
+          description: Broadcaster Id
+          required: true
+          schema:
+            type: integer
+      # requestBody:
+      #   content:
+      #     application/octet-stream:
+      #       schema:
+      #         type: string
+      #         format: binary
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudioConsumer'
+                
+  /user/{userId}/meetings:
+   get:
+      tags:
+        - details
+      summary: Find Details for all meeting rooms where user was a host
+      parameters:
+        - name: userId
+          in: path
+          description: User Id
+          required: true
+          schema:
+            type: integer
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/MeetingDetails'          
+            
+        '400':
+          description: Invalid UserId
+  /user/{userId}/meetings/{meetingId}/videoDownload:
+   get:
+      tags:
+        - details
+      summary: Download the Meeting Video recording
+      parameters:
+        - name: userId
+          in: path
+          description: User Id
+          required: true
+          schema:
+            type: integer
+        - name: meetingId
+          in: path
+          description: Meeting Id
+          required: true
+          schema:
+            type: integer 
+
+      responses:
+        '200':
+          description: successful operation
+          content:
+            application/octet-stream:
+              schema:
+                format: binary         
+            
+        '400':
+          description: Invalid
+components:
+  schemas:
+    
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 10
+        email:
+          type: string
+          example: john@email.com
+        password:
+          type: string
+          example: '12345'
+      xml:
+        name: user
+    Room:
+      type: object
+      properties:
+        roomId:
+          type: integer
+          format: int64
+          example: 12346
+        hostId:
+          type: integer
+        
+    Broadcaster:
+      type: object
+      properties:
+        broadcasterId:
+          type: integer
+          format: int64
+          example: 12346
+        transportId:
+          type: integer
+          format: int64
+          example: 12346
+    AudioConsumer:
+      type: object
+      properties:
+        audioConsumerId:
+          type: integer
+    VideoConsumer:
+      type: object
+      properties:
+        videoConsumerId:
+          type: integer
+    AudioProducer:
+      type: object
+      properties:
+        audioProducerId:
+          type: integer
+    VideoProducer:
+      type: object
+      properties:
+        videoproducerId:
+          type: integer
+    MeetingDetails:
+      type: object
+      properties:
+        meeting_id:
+          type: integer
+        participants:
+          type: array
+          items:
+            type: integer
+        attendance:
+          type: integer
+        recording_link:
+          type: string
+        
+    
+
+    # ApiResponse:
+    #   type: object
+    #   properties:
+    #     code:
+    #       type: integer
+    #       format: int32
+    #     type:
+    #       type: string
+    #     message:
+    #       type: string
+    #   xml:
+    #     name: '##default'
+    # api_key:
+    #   type: apiKey
+    #   name: api_key
+    #   in: header
