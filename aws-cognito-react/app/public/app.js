@@ -11,17 +11,18 @@ const Events = {
   var audioOn = true;
   var videoOn = true;
 
+var globalSessionId = ""
 $(document).ready(async () => {
     var webComponent = document.querySelector('openvidu-webcomponent');
-    var form = document.getElementById('main');
 
-    var sessionId = document.getElementById('sessionName').value;
+   
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const userId = urlParams.get('userId');
 
     webComponent.addEventListener('onSessionCreated', (event) => {
         var session = event.detail;
+   
 
         // You can see the session documentation here
         // https://docs.openvidu.io/en/stable/api/openvidu-browser/classes/session.html
@@ -50,14 +51,17 @@ $(document).ready(async () => {
     });
     webComponent.addEventListener('onJoinButtonClicked', (event) => {
         console.log(event)
+        const sessionId = globalSessionId
         createParticipant(sessionId, userId)
      });
     webComponent.addEventListener('onToolbarLeaveButtonClicked', (event) => { 
         console.log(event);
+        const sessionId = globalSessionId
         createEvent(sessionId, userId, Events.LEFTMEETING)
     });
     webComponent.addEventListener('onToolbarCameraButtonClicked', (event) => {
         console.log(event);
+        const sessionId = globalSessionId
         if (audioOn) {
             createEvent(sessionId, userId, Events.VIDEOMUTE)
             audioOn = false
@@ -69,6 +73,7 @@ $(document).ready(async () => {
      });
     webComponent.addEventListener('onToolbarMicrophoneButtonClicked', (event) => { 
         console.log(event);
+        const sessionId = globalSessionId
         if (audioOn) {
             createEvent(sessionId, userId, Events.AUDIOMUTE)
             audioOn = false
@@ -98,6 +103,11 @@ async function joinSession() {
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const participantName = urlParams.get('userId');
+    globalSessionId = sessionName
+    globalUserId = participantName
+    globalMakeHost = makeHost
+    console.log(globalSessionId, globalUserId)
+
 
     // Requesting tokens
     var promiseResults = await Promise.all([getToken(sessionName, makeHost), getToken(sessionName, makeHost)]);
