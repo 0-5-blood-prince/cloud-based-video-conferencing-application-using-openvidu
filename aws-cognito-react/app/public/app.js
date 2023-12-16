@@ -3,17 +3,19 @@ const Events = {
     VIDEOMUTE: 'VIDEOMUTE',
     VIDEOUNMUTE: 'VIDEOUNMUTE',
     AUDIOMUTE: 'AUDIOMUTE',
-    VIDEOUNMUTE: 'AUDIOUNMUTE',
+    AUDIOUNMUTE: 'AUDIOUNMUTE',
     SCREENSHAREON: 'SCREENSHAREON',
     SCREENSHAREOFF: 'SCREENSHAREOFF',
     LEFTMEETING: 'LEFTMEETING'
   };
-  var audioOn = true;
-  var videoOn = true;
+var audioOn = false;
+var videoOn = false;
+var screenOn = false;
 
 var globalSessionId = ""
 $(document).ready(async () => {
     var webComponent = document.querySelector('openvidu-webcomponent');
+    var form = document.getElementById('main');
 
    
     const queryString = window.location.search;
@@ -62,27 +64,38 @@ $(document).ready(async () => {
     webComponent.addEventListener('onToolbarCameraButtonClicked', (event) => {
         console.log(event);
         const sessionId = globalSessionId
-        if (audioOn) {
+        if (videoOn) {
             createEvent(sessionId, userId, Events.VIDEOMUTE)
-            audioOn = false
+            videoOn = false
         } else {
             createEvent(sessionId, userId, Events.VIDEOUNMUTE)
-            audioOn = true
+            videoOn = true
         }
         
      });
     webComponent.addEventListener('onToolbarMicrophoneButtonClicked', (event) => { 
         console.log(event);
         const sessionId = globalSessionId
-        if (audioOn) {
-            createEvent(sessionId, userId, Events.AUDIOMUTE)
-            audioOn = false
-        } else {
+        if (!audioOn) {
             createEvent(sessionId, userId, Events.AUDIOUNMUTE)
             audioOn = true
+        } else {
+            createEvent(sessionId, userId, Events.AUDIOMUTE)
+            audioOn = false
         }
     });
-    webComponent.addEventListener('onToolbarScreenshareButtonClicked', (event) => { });
+    webComponent.addEventListener('onToolbarScreenshareButtonClicked', (event) => {
+        console.log(event);
+        const sessionId = globalSessionId
+        if (!screenOn) {
+            createEvent(sessionId, userId, Events.SCREENSHAREON)
+            screenOn = true
+        } else {
+            createEvent(sessionId, userId, Events.SCREENSHAREOFF)
+            screenOn = false
+        }
+    });
+
     webComponent.addEventListener('onToolbarParticipantsPanelButtonClicked', (event) => { });
     webComponent.addEventListener('onToolbarChatPanelButtonClicked', (event) => { });
     webComponent.addEventListener('onToolbarFullscreenButtonClicked', (event) => { });
