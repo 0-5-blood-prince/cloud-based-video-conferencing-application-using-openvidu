@@ -69,6 +69,12 @@ def background_task():
                     headers={'Content-type': 'application/json'},
                     json={}
                 )
+                timee = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                mutex.acquire()
+                try:
+                    update_item({"meetingID": content["id"]}, "end_time", timee)
+                finally:
+                    mutex.release()
         time.sleep(30)
 
 threading.Thread(target=background_task, daemon=True).start()
@@ -129,16 +135,16 @@ def createConnection(sessionId):
 @app.route("/api/sessions/<sessionId>/participants", methods=['POST'])
 def participantCreated(sessionId):
     userId = request.headers.get('UserId')
-    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timee = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     mutex.acquire()
     try:
         details = lookup_data({"meetingID": sessionId})
         participants = set(details["participants"])
         if userId not in participants:
-            details["participants"][userId] = [["JOINMEETING", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]]
+            details["participants"][userId] = [["JOINMEETING", timee]]
             update_item({"meetingID": sessionId}, "participants", details["participants"])
         else:
-            details["participants"][userId].append(["JOINMEETING", datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+            details["participants"][userId].append(["JOINMEETING", timee])
             update_item({"meetingID": sessionId}, "participants", details["participants"])
     finally:
         mutex.release()
@@ -149,11 +155,11 @@ def participantCreated(sessionId):
 @app.route("/api/sessions/<sessionId>/participants/<participantId>/events", methods=['POST'])
 def recordEvent(sessionId, participantId):
     eventType = request.headers.get('EventType')
-    time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    timee = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     mutex.acquire()
     try:
         details = lookup_data({"meetingID": sessionId})
-        details["participants"][participantId].append([eventType, time])
+        details["participants"][participantId].append([eventType, timee])
         update_item({"meetingID": sessionId}, "participants", details["participants"])
     finally:
         mutex.release()
