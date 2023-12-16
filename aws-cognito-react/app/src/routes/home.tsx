@@ -58,6 +58,10 @@ export default function Home() {
     history.push('newmeeting')
   }
 
+  function home() {
+    history.push('/')
+  }
+
   function changePasswordClicked() {
     history.push('changepassword')
   }
@@ -65,17 +69,18 @@ export default function Home() {
   return (
     <Grid container>
       <Grid className={classes.root} container direction="column" justify="center" alignItems="center">
-        <Box className={classes.hero} p={4}>
+        <Box className={classes.hero} p={1}>
           <Grid className={classes.root} container direction="column" justify="center" alignItems="center">
             {/* <Box m={2}>
               <img src={logoImage} width={224} height={224} alt="logo" />
             </Box> */}
             <Box m={2}>
                 <Grid container direction="row" justify="center" alignItems="center">
-                  <Typography className={classes.title} variant="h3">
+                  <Typography className={classes.title} variant="h4">
                     Video Conferencing Home
                   </Typography>
-                <Grid container direction="row" justify="center" alignItems="center">
+                  {/* <p></p> */}
+                {/* <Grid container direction="row" justify="center" alignItems="center"> */}
                   <Button onClick={signOutClicked} variant="contained" color="primary">
                 Sign Out
               </Button>
@@ -85,8 +90,11 @@ export default function Home() {
               <Button onClick={newMeeting} variant="contained" color="primary">
                 New Meeting
               </Button>
+              <Button onClick={home} variant="contained" color="primary">
+                Home
+              </Button>
               </Grid>
-                </Grid>
+                {/* </Grid> */}
                 
             </Box>
           </Grid>

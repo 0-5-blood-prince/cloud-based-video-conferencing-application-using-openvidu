@@ -24,9 +24,9 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 
 # Load env variables
 SERVER_PORT = 9000
-# OPENVIDU_URL = "https://54.197.183.27:443/"
+OPENVIDU_URL = "https://54.197.183.27:443/"
 # OPENVIDU_IP = "54.197.183.27"
-OPENVIDU_URL = "http://localhost:4443/"
+# OPENVIDU_URL = "http://localhost:4443/"
 OPENVIDU_SECRET = "TEST"
 
 
@@ -63,6 +63,7 @@ def create_table_meeting():
 def initializeSession():
     try:
         body = request.json if request.data else {}
+        body['recordingMode'] = "ALWAYS"
         response = requests.post(
             OPENVIDU_URL + "openvidu/api/sessions",
             verify=False,
@@ -75,6 +76,7 @@ def initializeSession():
     except requests.exceptions.HTTPError as err:
         if (err.response.status_code == 409):
             # Session already exists in OpenVidu
+            print("Already Exists")
             return request.json["customSessionId"]
         else:
             return err
