@@ -48,6 +48,7 @@ $(document).ready(async () => {
             form.style.display = 'block';
             webComponent.style.display = 'none';
             console.log(event);
+            const sessionId = globalSessionId
         });
 
         session.on('exception', (exception) => {
