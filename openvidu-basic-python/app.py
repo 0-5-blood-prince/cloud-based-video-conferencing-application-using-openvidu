@@ -84,9 +84,12 @@ def initializeSession():
 def createConnection(sessionId):
     makeHost = request.headers.get('makeHost')
     role = "PUBLISHER"
+    print(makeHost)
     if makeHost:
         role = "MODERATOR"
+    print(role)
     body = request.json if request.data else {}
+    body['role'] = role
     response =  requests.post(
         OPENVIDU_URL + "openvidu/api/sessions/" + sessionId + "/connection",
         verify=False,

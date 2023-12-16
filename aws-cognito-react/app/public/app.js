@@ -94,12 +94,13 @@ async function joinSession() {
     //Getting form inputvalue
     var sessionName = document.getElementById('sessionName').value;
     var makeHost = document.getElementById('hostcheck').value;
+    console.log(makeHost)
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const participantName = urlParams.get('userId');
 
     // Requesting tokens
-    var promiseResults = await Promise.all([getToken(sessionName), getToken(sessionName)]);
+    var promiseResults = await Promise.all([getToken(sessionName, makeHost), getToken(sessionName, makeHost)]);
     var tokens = { webcam: promiseResults[0], screen: promiseResults[1] };
     console.log(tokens)
 
@@ -179,7 +180,7 @@ function createSession(sessionId) {
     });
 }
 
-function createToken(sessionId) {
+function createToken(sessionId, makeHost) {
     return new Promise((resolve, reject) => {
         $.ajax({
             type: 'POST',
