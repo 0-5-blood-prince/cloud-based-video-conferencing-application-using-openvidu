@@ -9,6 +9,7 @@ import ast
 from botocore.exceptions import ClientError
 from datetime import datetime, timedelta
 import threading
+import time
 
 AWS_ACCESS_KEY_ID = config.AWS_ACCESS_KEY_ID
 AWS_SECRET_ACCESS_KEY = config.AWS_SECRET_ACCESS_KEY
@@ -31,41 +32,46 @@ cors = CORS(app, resources={r"/*": {"origins": "*"}})
 # Load env variables
 SERVER_PORT = 9000
 OPENVIDU_URL = "https://54.197.183.27:443/"
-OPENVIDU_URL = "https://54.197.183.27:443/"
-# OPENVIDU_IP = "54.197.183.27"
-# OPENVIDU_URL = "http://localhost:4443/"
-# OPENVIDU_URL = "http://localhost:4443/"
 OPENVIDU_SECRET = "TEST"
 
+def background_task():
+    while True:
+        response = requests.get(
+            OPENVIDU_URL + "openvidu/api/sessions",
+            verify=False,
+            auth=("OPENVIDUAPP", OPENVIDU_SECRET),
+            headers={'Content-type': 'application/json'},
+            json={}
+        ).json()
+        response_1 = requests.get(
+            OPENVIDU_URL + "openvidu/api/recordings",
+            verify=False,
+            auth=("OPENVIDUAPP", OPENVIDU_SECRET),
+            headers={'Content-type': 'application/json'},
+            json={}
+        ).json()
+        for content in response["content"]:
+            if content["connections"]["numberOfElements"] == 0:
+                for record in response_1["items"]:
+                    if record["sessionId"] == content["id"]:
+                        response = requests.post(
+                            OPENVIDU_URL + "/openvidu/api/recordings/stop/" + record["id"],
+                            verify=False,
+                            auth=("OPENVIDUAPP", OPENVIDU_SECRET),
+                            headers={'Content-type': 'application/json'},
+                            json={}
+                        )
+                        break
+                response = requests.delete(
+                    OPENVIDU_URL + "openvidu/api/sessions/" + content["id"],
+                    verify=False,
+                    auth=("OPENVIDUAPP", OPENVIDU_SECRET),
+                    headers={'Content-type': 'application/json'},
+                    json={}
+                )
+        time.sleep(30)
 
-# def create_table_meeting():   
-#    table = resource.create_table(
-#        TableName = 'Meeting', # Name of the table
-#        KeySchema = [
-#            {
-#                'AttributeName': 'meetingId',
-#                'KeyType'      : 'HASH' #RANGE = sort key, HASH = partition key
-#            }
-#        ],
-#        AttributeDefinitions = [
-#            {
-#                'AttributeName': 'meetingId', # Name of the attribute
-#                'AttributeType': 'S'   # N = Number (B= Binary, S = String)
-#            }
-#        ],
-#        ProvisionedThroughput={
-#            'ReadCapacityUnits'  : 10,
-#            'WriteCapacityUnits': 10
-#        }
-#    )
-#    return table
-
-
-
-# @app.route("/createDB",methods=["POST"])
-# def createDB():
-#     create_table_meeting()
-#     return 200
+threading.Thread(target=background_task, daemon=True).start()
 
 @app.route("/api/sessions", methods=['POST'])
 def initializeSession():
@@ -86,9 +92,6 @@ def initializeSession():
             "start_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "end_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
             "participants": {}
-            #"active_participants": {}
-            #"possible_hosts": [],
-            #"users_with_interactions": []
         }
         insert_data(details)
         return response.json()["sessionId"]
@@ -134,7 +137,9 @@ def participantCreated(sessionId):
         if userId not in participants:
             details["participants"][userId] = [["JOINMEETING", datetime.now().strftime("%Y-%m-%d %H:%M:%S")]]
             update_item({"meetingID": sessionId}, "participants", details["participants"])
-        update_item({"meetingID": sessionId}, "participants", details["participants"])
+        else:
+            details["participants"][userId].append(["JOINMEETING", datetime.now().strftime("%Y-%m-%d %H:%M:%S")])
+            update_item({"meetingID": sessionId}, "participants", details["participants"])
     finally:
         mutex.release()
     return "OK"

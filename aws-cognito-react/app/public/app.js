@@ -49,7 +49,6 @@ $(document).ready(async () => {
             webComponent.style.display = 'none';
             console.log(event);
             const sessionId = globalSessionId
-            createEvent(sessionId, userId, Events.LEFTMEETING)
         });
 
         session.on('exception', (exception) => {
