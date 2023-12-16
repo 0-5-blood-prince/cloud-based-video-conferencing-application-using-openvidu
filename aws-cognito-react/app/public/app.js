@@ -43,8 +43,13 @@ $(document).ready(async () => {
 
         session.on('sessionDisconnected', (event) => {
             console.warn("sessionDisconnected event");
+            
+            var form = document.getElementById('main');
             form.style.display = 'block';
             webComponent.style.display = 'none';
+            console.log(event);
+            const sessionId = globalSessionId
+            createEvent(sessionId, userId, Events.LEFTMEETING)
         });
 
         session.on('exception', (exception) => {
@@ -135,7 +140,7 @@ async function joinSession() {
     // Displaying webcomponent
     webComponent.style.display = 'block';
 
-    // webComponent.participantName = participantName;
+    webComponent.participantName = participantName;
 
     // You can see the UI parameters documentation here
     // https://docs.openvidu.io/en/stable/api/openvidu-angular/components/OpenviduWebComponentComponent.html#inputs

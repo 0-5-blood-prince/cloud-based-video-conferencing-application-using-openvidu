@@ -14,13 +14,12 @@
 </head>
 
 <body>
-
     <!-- Form to connect to a video-session -->
     <div id="main" style="text-align: center;">
         <h1>Join a video session</h1>
         <form onsubmit="joinSession(); return false" style="padding: 80px; margin: auto">
             <p>
-                <label>Session Name:</label>
+                <label>Session Code:</label>
                 <input type="text" id="sessionName" required>
             </p>
             <p>
@@ -30,6 +29,50 @@
                 <input type="submit" value="JOIN">
             </p>
         </form>
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/uuid/8.3.2/uuid.min.js"></script>
+        <script>
+            function copyToClipboard() {
+              // Select the text field
+              const textToCopy = document.getElementById('newMeetingCode');
+        
+              // Select the text within the text field
+              textToCopy.select();
+              textToCopy.setSelectionRange(0, 99999); // For mobile devices
+        
+              // Copy the selected text to clipboard
+              document.execCommand('copy');
+        
+              // Optionally, provide user feedback
+              alert('Text copied to clipboard: ' + textToCopy.value);
+            }
+
+            function generateNewCode() {
+                // const newUUID = uuid.v4();
+                const length = 9;
+                const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+                let code = '';
+
+                for (let i = 0; i < length; i++) {
+                    const randomIndex = Math.floor(Math.random() * characters.length);
+                    code += characters.charAt(randomIndex);
+                }
+                document.getElementById('newMeetingCode').value = code;
+            }
+          </script>
+
+        <form onsubmit="generateNewCode(); return false" style="padding: 80px;">
+            <p>
+                <p>
+                <input type="text" value="New Meeting Code" id="newMeetingCode">
+                <button onclick="copyToClipboard()">Copy Code</button>
+                </p>
+                <input type="submit" value="Generate New Meeting Code">
+            </p>
+        </form>
+        
+  
+
+  
     </div>
 
     <!-- OpenVidu Web Component -->
