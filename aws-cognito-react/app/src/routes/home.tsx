@@ -1,4 +1,4 @@
-import React, { useContext } from 'react'
+import React, { useContext, useEffect, useState } from 'react'
 
 import { useHistory } from 'react-router-dom'
 
@@ -32,23 +32,78 @@ const useStyles = makeStyles((theme) => ({
     background: 'rgb(220,220,220)',
   },
 }))
-
+interface MeetingData {
+  'Meeting Code': any;
+  'Join Time': any;
+  'Exit Time': any;
+  'Audio Activity': any;
+  'Video Activity': any;
+  'Screen Share Activity': any;
+  'Transcript': any;
+  'Video Download Url': any;
+}
 export default function Home() {
-  const columns = ['Meeting Id', 'Start Time', 'End Time', 'Number of Participants']; // Your column names
-  const expandedColumns = ['Meeting Id', 'Start Time', 'End Time', 'Number of Participants', 'Transcript', 'Recording']; // Your column names
+  const columns = ['Meeting Code', 'Join Time', 'Exit Time', 'Audio Activity', 'Video Activity']; // Your column names
+  const expandedColumns = ['Meeting Code', 'Join Time', 'Exit Time', 'Audio Activity', 'Video Activity', 'Screen Share Activity', 'Transcript', 'Video Download Url']; // Your column names
 
-  const data = [
-    { 'Meeting Id': '1234', 'Start Time': 25, 'End Time': 30, 'Number of Participants': 5, 'Transcript':'abcdefghijklmnopqrstuvwxyz','Recording':'link'},
-    { 'Meeting Id': '1235', 'Start Time': 30, 'End Time': 40, 'Number of Participants': 6, 'Transcript':'abcdefghijklmnopqrstuvwxyz','Recording':'link'},
-    // Add more rows as needed
-  ];
+  const [data, setData] = useState<MeetingData[]>([]);
+
+  // const data = [
+  //   { 'Meeting Id': '1234', 'Start Time': 25, 'End Time': 30, 'Number of Participants': 5, 'Transcript':'abcdefghijklmnopqrstuvwxyz','Recording':'link'},
+  //   { 'Meeting Id': '1235', 'Start Time': 30, 'End Time': 40, 'Number of Participants': 6, 'Transcript':'abcdefghijklmnopqrstuvwxyz','Recording':'link'},
+  //   // Add more rows as needed
+  // ];
   const classes = useStyles()
 
   const history = useHistory()
 
   const auth = useContext(AuthContext)
 
-  
+
+  useEffect(() => {
+    const userId = auth.attrInfo[0].Value;
+    const fetchData = async () => {
+      try {
+        const response = await fetch('https://1yb39uhbz6.execute-api.us-east-1.amazonaws.com/TEST/meetings',{
+          method: 'GET', // Specify the HTTP method (GET, POST, PUT, etc.)
+          headers: {
+            'Content-Type': 'application/json', // Example header (modify as needed)
+            'userId' : userId
+          },
+        });
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        const result = await response.json();
+        console.log(result);
+        const meetings = result.meetings
+        var responseData = []
+        var i = 0;
+        while(i < meetings.length) {
+          const meeting = meetings[i]
+          console.log(meeting)
+          const detail = {
+            'Meeting Code': meeting.meetingId, 
+            'Join Time': meeting.firstSeen ,
+            'Exit Time': meeting.lastSeen,
+            'Audio Activity': meeting.audioActivity,
+            'Video Activity': meeting.videoActivity,
+            'Screen Share Activity': meeting.screenShareActivity,
+            'Transcript': meeting.transcript,
+            'Video Download Url': meeting.videoDownloadurl
+          }
+          i+=1
+          responseData.push(detail)
+        }
+        console.log(responseData)
+        setData(responseData);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
   function signOutClicked() {
     auth.signOut()
     history.push('/')

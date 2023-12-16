@@ -9,6 +9,7 @@ import {
   AccordionSummary,
   AccordionDetails,
   Typography,
+  Button,
 } from '@material-ui/core';
 
 const Details = ({ data, columns, expandedColumns }: any) => {
@@ -52,8 +53,24 @@ const Details = ({ data, columns, expandedColumns }: any) => {
                         <ul>
                           {expandedColumns.map((columnName: string) => (
                             <li key={columnName}>
-                              <strong>{columnName}: </strong>
-                              {d[columnName]}
+                              
+                              {columnName === 'Video Download Url' ? (
+                                <>
+                                Recording : 
+                                  {d[columnName] ?(
+                                    <Button variant="contained" color="secondary" href={d[columnName]} download>
+                                      Download
+                                    </Button>
+                                  ) : (
+                                    'No video available' // Display message if videoUrl is not set
+                                  )
+                                  }
+                                </>
+                              ) : (
+                                
+                                // Render other column data normally
+                                <span>{columnName} : {d[columnName]}</span>
+                              )}
                             </li>
                           ))}
                         </ul>
