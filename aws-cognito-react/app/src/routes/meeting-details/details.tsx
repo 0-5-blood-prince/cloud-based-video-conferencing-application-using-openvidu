@@ -10,6 +10,7 @@ import {
   AccordionDetails,
   Typography,
   Button,
+  makeStyles,
 } from '@material-ui/core';
 
 const Details = ({ data, columns, expandedColumns }: any) => {
@@ -24,12 +25,42 @@ const Details = ({ data, columns, expandedColumns }: any) => {
     }
   };
 
+
+  const useStyles = makeStyles({
+    accordionContainer: {
+      display: 'flex',
+      justifyContent: 'center',
+      // alignItems: 'center',
+      // minHeight: '100vh',
+    },
+    columnName: {
+      fontSize: '1.5em', // Increase font size of column names
+      fontWeight: 'bold', // Make column names bold
+    },
+    accordionContent: {
+      width: '50%',
+      textAlign: 'left',
+      whiteSpace: 'pre-wrap', // Preserve new lines
+    },
+    listItem: {
+      display: 'inline-block', // Display as inline-block to place items in a line
+      marginRight: '20px', // Add right margin for spacing between items
+      verticalAlign: 'top', // Align items vertically at the top
+      marginBottom: '10px', // Add bottom margin for spacing between lines
+    },
+    strongText: {
+      fontWeight: 'bold',
+      marginRight: '5px', // Add right margin between label and value
+    },
+  });
+  const classes = useStyles();
+
   return (
     <Table>
       <TableHead>
         <TableRow>
           {columns.map((columnName: string) => (
-            <TableCell key={columnName}>{columnName}</TableCell>
+            <TableCell key={columnName}><strong className={classes.columnName}>{columnName}</strong></TableCell>
           ))}
         </TableRow>
       </TableHead>
@@ -43,12 +74,12 @@ const Details = ({ data, columns, expandedColumns }: any) => {
             </TableRow>
             {expandedRow === d && (
               <TableRow>
-                <TableCell colSpan={columns.length}>
-                  <Accordion>
+                <TableCell colSpan={columns.length} >
+                  <Accordion className={classes.accordionContainer}>
                     {/* <AccordionSummary>
                       <Typography>Selected Columns</Typography>
                     </AccordionSummary> */}
-                    <AccordionDetails>
+                    <AccordionDetails className={classes.accordionContent}>
                       <Typography component={'div'}>
                         <ul>
                           {expandedColumns.map((columnName: string) => (
@@ -56,9 +87,9 @@ const Details = ({ data, columns, expandedColumns }: any) => {
                               
                               {columnName === 'Video Download Url' ? (
                                 <>
-                                Recording : 
+                                <strong>Recording: </strong>
                                   {d[columnName] ?(
-                                    <Button variant="contained" color="secondary" href={d[columnName]} download>
+                                    <Button variant="contained" color="secondary" onClick={() => window.open(d[columnName], '_blank')}>
                                       Download
                                     </Button>
                                   ) : (
@@ -68,8 +99,13 @@ const Details = ({ data, columns, expandedColumns }: any) => {
                                 </>
                               ) : (
                                 
+                                <span key={columnName} className={classes.listItem}>
+                                  <strong className={classes.strongText}>{columnName}:</strong>
+                                  <span>{d[columnName]}</span>
+                                </span>
                                 // Render other column data normally
-                                <span>{columnName} : {d[columnName]}</span>
+                                // <span><strong>{columnName}:             </strong>
+                                // {d[columnName]}</span>
                               )}
                             </li>
                           ))}
