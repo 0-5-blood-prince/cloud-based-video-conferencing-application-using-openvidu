@@ -22,15 +22,17 @@ const useStyles = makeStyles((theme) => ({
     background: 'rgb(220,220,220)',
   },
 }))
+
 const OpenViduComponent = () => {
   
+  const auth = useContext(AuthContext)
+
   // console.log(JSON.stringify(auth.attrInfo, null, 2))
 
   const classes = useStyles()
 
   const history = useHistory()
 
-  const auth = useContext(AuthContext)
 
   const userId = auth.attrInfo[0].Value;
   const userName = auth.attrInfo[3].Value;
