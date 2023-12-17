@@ -33,7 +33,8 @@ const OpenViduComponent = () => {
   const auth = useContext(AuthContext)
 
   const userId = auth.attrInfo[0].Value;
-  console.log(userId)
+  const userName = auth.attrInfo[3].Value;
+  console.log(userId, userName)
   function signOutClicked() {
     auth.signOut()
     history.push('/')
@@ -47,7 +48,8 @@ const OpenViduComponent = () => {
     history.push('/')
   }
 
-  const url = 'video.html?userId='+userId
+  const url = 'video.html?userId='+userId+'&userName='+userName
+  console.log(url)
   return (
     <Grid container direction="row" justify="center" alignItems="center">
       <Grid className={classes.root} container direction="column" justify="center" alignItems="center">

@@ -115,11 +115,13 @@ async function joinSession() {
       
     //Getting form inputvalue
     var sessionName = document.getElementById('sessionName').value;
-    var makeHost = document.getElementById('hostcheck').value;
+    var makeHost = true
     console.log(makeHost)
     const queryString = window.location.search;
     const urlParams = new URLSearchParams(queryString);
     const participantName = urlParams.get('userId');
+    const userName = urlParams.get('userName');
+    console.log(userName)
     globalSessionId = sessionName
     globalUserId = participantName
     globalMakeHost = makeHost
@@ -139,23 +141,31 @@ async function joinSession() {
     // Displaying webcomponent
     webComponent.style.display = 'block';
 
-    webComponent.participantName = participantName;
+    webComponent.participantName = userName;
 
     // You can see the UI parameters documentation here
     // https://docs.openvidu.io/en/stable/api/openvidu-angular/components/OpenviduWebComponentComponent.html#inputs
 
     // webComponent.toolbarScreenshareButton = false;
-    // webComponent.minimal = true;
+    webComponent.minimal = false;
     // webComponent.prejoin = true;
     webComponent.videoMuted = true;
     webComponent.audioMuted = true;
-
+    // webComponent.toolbarParticipantsPanelButton = false;
+    // webComponent.activitiesPanelRecordingActivity = false;
+    webComponent.activitiesPanelBroadcastingActivity = false;
+    webComponent.toolbarActivitiesPanelButton = false;
+    webComponent.toolbarBackgroundEffectsButton = false;
+    webComponent.toolbarFullscreenButton = false;
+    webComponent.toolbarCaptionsButton = false;
     // webComponent.toolbarScreenshareButton = true;
-    // webComponent.toolbarFullscreenButton = true;
+    webComponent.toolbarFullscreenButton = false;
     // webComponent.toolbarLeaveButton = true;
     // webComponent.toolbarChatPanelButton = true;
     // webComponent.toolbarParticipantsPanelButton = true;
-    // webComponent.toolbarDisplayLogo = true;
+    webComponent.toolbarDisplayLogo = false;
+    webComponent.streamSettingsButton = false;
+    webComponent.toolbarBroadcastingButton = false;
     // webComponent.toolbarDisplaySessionName = true;
     // webComponent.streamDisplayParticipantName = true;
     // webComponent.streamDisplayAudioDetection = true;
@@ -188,7 +198,7 @@ function hideForm() {
  * more about the integration of OpenVidu in your application server.
  */
 
-var APPLICATION_SERVER_URL = "http://localhost:9000/";
+var APPLICATION_SERVER_URL = "http://54.161.249.204:9000/";
 
 function getToken(mySessionId, makeHost) {
     return createSession(mySessionId).then(sessionId => createToken(sessionId, makeHost));

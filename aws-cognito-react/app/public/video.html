@@ -22,10 +22,10 @@
                 <label>Session Code:</label>
                 <input type="text" id="sessionName" required>
             </p>
-            <p>
+            <!-- <p>
                 <label for="checkbox">Make me host if possible</label>
                 <input type="checkbox" id="hostcheck" name="check">
-            <p>
+            <p> -->
                 <input type="submit" value="JOIN">
             </p>
         </form>
@@ -40,10 +40,15 @@
               textToCopy.setSelectionRange(0, 99999); // For mobile devices
         
               // Copy the selected text to clipboard
+            //   navigator.clipboard.writeText(textToCopy).then(() => {console.log('Text copied to clipboard');})
+            //     .catch(err => {
+            //         console.error('Failed to copy text: ', err);
+            //         // Handle errors here
+            //     });
               document.execCommand('copy');
         
               // Optionally, provide user feedback
-              alert('Text copied to clipboard: ' + textToCopy.value);
+            //   alert('Text copied to clipboard: ' + textToCopy.value);
             }
 
             function generateNewCode() {
@@ -60,15 +65,16 @@
             }
           </script>
 
-        <form onsubmit="generateNewCode(); return false" style="padding: 80px;">
+        <!-- <form onsubmit="generateNewCode(); return false" style="padding: 80px;"> -->
             <p>
                 <p>
                 <input type="text" value="New Meeting Code" id="newMeetingCode">
                 <button onclick="copyToClipboard()">Copy Code</button>
                 </p>
-                <input type="submit" value="Generate New Meeting Code">
+                <button onclick="generateNewCode()">Generate New Code</button>
+                <!-- <input type="submit" value="Generate New Meeting Code"> -->
             </p>
-        </form>
+        <!-- </form> -->
         
   
 

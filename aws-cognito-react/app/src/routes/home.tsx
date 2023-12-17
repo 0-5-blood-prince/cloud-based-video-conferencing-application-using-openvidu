@@ -39,12 +39,12 @@ interface MeetingData {
   'Audio Activity': any;
   'Video Activity': any;
   'Screen Share Activity': any;
-  'Transcript': any;
   'Video Download Url': any;
+  'Transcript': any;
 }
 export default function Home() {
   const columns = ['Meeting Code', 'Join Time', 'Exit Time', 'Audio Activity', 'Video Activity']; // Your column names
-  const expandedColumns = ['Meeting Code', 'Join Time', 'Exit Time', 'Audio Activity', 'Video Activity', 'Screen Share Activity', 'Transcript', 'Video Download Url']; // Your column names
+  const expandedColumns = ['Meeting Code', 'Join Time', 'Exit Time', 'Audio Activity', 'Video Activity', 'Screen Share Activity',  'Video Download Url','Transcript']; // Your column names
 
   const [data, setData] = useState<MeetingData[]>([]);
 
