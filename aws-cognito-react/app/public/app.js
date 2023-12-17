@@ -132,6 +132,8 @@ $(document).ready(async () => {
 
 
 async function joinSession() {
+    alert('Disclaimer:    The Video Recording will be analyzed for business purposes.');
+
     
       
     //Getting form inputvalue
