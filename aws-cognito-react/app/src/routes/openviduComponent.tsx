@@ -1,5 +1,5 @@
 import { Grid, Typography, makeStyles } from '@material-ui/core';
-import React, { useContext, useEffect } from 'react';
+import React, { useContext, useEffect, useState } from 'react'
 import { AuthContext } from '../contexts/authContext';
 import { useHistory } from 'react-router-dom';
 import Box from '@material-ui/core/Box'
@@ -23,20 +23,20 @@ const useStyles = makeStyles((theme) => ({
   },
 }))
 
-const OpenViduComponent = () => {
-  
-  const auth = useContext(AuthContext)
-
-  // console.log(JSON.stringify(auth.attrInfo, null, 2))
-
+export default function OpenViduComponent() {
   const classes = useStyles()
 
   const history = useHistory()
 
+  
+  console.log(AuthContext)
+  const auth = useContext(AuthContext)
 
-  const userId = auth.attrInfo[0].Value;
-  const userName = auth.attrInfo[3].Value;
-  console.log(userId, userName)
+  // console.log(JSON.stringify(auth.attrInfo, null, 2))
+
+
+
+  
   function signOutClicked() {
     auth.signOut()
     history.push('/')
@@ -50,6 +50,25 @@ const OpenViduComponent = () => {
     history.push('/')
   }
 
+  // const [userName, setUserName] = useState("");
+  // const [userId, setUserId] = useState("");
+
+  // useEffect(() => {
+  console.log(auth)
+  var userId = auth.attrInfo[0].Value
+  var userName = auth.attrInfo[2].Value
+  for(var i=0;i < auth.attrInfo.length;i++) {
+    if (auth.attrInfo[i].Name === "sub") {
+      userId = auth.attrInfo[i].Value
+    }
+
+    if (auth.attrInfo[i].Name === "email") {
+      userName = auth.attrInfo[i].Value
+    }
+  } 
+ 
+    console.log(userId, userName)
+  // })
   const url = 'video.html?userId='+userId+'&userName='+userName
   console.log(url)
   return (
@@ -89,5 +108,4 @@ const OpenViduComponent = () => {
   );
 };
 
-export default OpenViduComponent;
 
