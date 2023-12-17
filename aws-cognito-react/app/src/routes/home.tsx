@@ -84,8 +84,8 @@ export default function Home() {
           console.log(meeting)
           const detail = {
             'Meeting Code': meeting.meetingId, 
-            'Join Time': meeting.firstSeen ,
-            'Exit Time': meeting.lastSeen,
+            'Join Time': meeting.joinTime ,
+            'Exit Time': meeting.exitTime,
             'Audio Activity': meeting.audioActivity,
             'Video Activity': meeting.videoActivity,
             'Screen Share Activity': meeting.screenShareActivity,

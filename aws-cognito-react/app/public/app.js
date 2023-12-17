@@ -33,6 +33,7 @@ $(document).ready(async () => {
             console.log("connectionCreated", e);
         });
 
+
         session.on('streamDestroyed', (e) => {
             console.log("streamDestroyed", e);
         });
@@ -40,6 +41,20 @@ $(document).ready(async () => {
         session.on('streamCreated', (e) => {
             console.log("streamCreated", e);
         });
+
+        // session.on('recordingStarted', event => {
+        //     // var webComponent = document.querySelector('openvidu-webcomponent');
+        //     // webComponent.toolbarRecordingButton = false;
+		// 	// pushEvent(event);
+        //     console.log(event)
+		// });
+
+		// session.on('recordingStopped', event => {
+		// 	// pushEvent(event);
+        //     // var webComponent = document.querySelector('openvidu-webcomponent');
+        //     // webComponent.toolbarRecordingButton = false;
+        //     console.log(event)
+		// });
 
         session.on('sessionDisconnected', (event) => {
             console.warn("sessionDisconnected event");
@@ -77,6 +92,12 @@ $(document).ready(async () => {
         }
         
      });
+    webComponent.addEventListener('onToolbarStopRecordingClicked', (event) => {
+        console.log(event);
+    })
+    webComponent.addEventListener('onToolbarStartRecordingClicked', (event) => {
+        console.log(event);
+    })
     webComponent.addEventListener('onToolbarMicrophoneButtonClicked', (event) => { 
         console.log(event);
         const sessionId = globalSessionId
