@@ -25,11 +25,15 @@ const Details = ({ data, columns, expandedColumns }: any) => {
     }
   };
 
+  const sendMeetingDetails = () => {
+    // TODO hit backend to make the details available for other users and mail them
+  }
+
 
   const useStyles = makeStyles({
     accordionContainer: {
       display: 'flex',
-      justifyContent: 'center',
+      // justifyContent: 'center',
       // alignItems: 'center',
       // minHeight: '100vh',
     },
@@ -38,7 +42,7 @@ const Details = ({ data, columns, expandedColumns }: any) => {
       fontWeight: 'bold', // Make column names bold
     },
     accordionContent: {
-      width: '50%',
+      width: '100%',
       textAlign: 'left',
       whiteSpace: 'pre-wrap', // Preserve new lines
     },
@@ -109,6 +113,9 @@ const Details = ({ data, columns, expandedColumns }: any) => {
                               )}
                             </li>
                           ))}
+                          <Button variant="contained" color="secondary" onClick={sendMeetingDetails}>
+                              Send Meeting Details to other users
+                            </Button>
                         </ul>
                       </Typography>
                     </AccordionDetails>
