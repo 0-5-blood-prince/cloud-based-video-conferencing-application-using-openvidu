@@ -158,7 +158,7 @@ async function joinSession() {
 
 
     // Requesting tokens
-    var promiseResults = await Promise.all([getToken(sessionName, makeHost, participantName), getToken(sessionName, makeHost, participantName)]);
+    var promiseResults = await Promise.all([getToken(sessionName, makeHost, participantName, userName), getToken(sessionName, makeHost, participantName, userName)]);
     var tokens = { webcam: promiseResults[0], screen: promiseResults[1] };
     console.log(tokens)
 
@@ -229,17 +229,17 @@ function hideForm() {
 
 var APPLICATION_SERVER_URL = "http://54.161.249.204:9000/";
 
-function getToken(mySessionId, makeHost, participantName) {
-    return createSession(mySessionId, participantName).then(sessionId => createToken(sessionId, makeHost, participantName));
+function getToken(mySessionId, makeHost, participantName, userName) {
+    return createSession(mySessionId, participantName, userName).then(sessionId => createToken(sessionId, makeHost, participantName));
 }
 
-function createSession(sessionId, participantName) {
+function createSession(sessionId, participantName, userName) {
     return new Promise((resolve, reject) => {
         $.ajax({
             type: "POST",
             url: APPLICATION_SERVER_URL + "api/sessions",
             data: JSON.stringify({ customSessionId: sessionId }),
-            headers: { "Content-Type": "application/json", "participantName": participantName },
+            headers: { "Content-Type": "application/json", "participantName": participantName, "email": userName },
             success: response => resolve(response), // The sessionId
             error: (error) => reject(error)
         });
