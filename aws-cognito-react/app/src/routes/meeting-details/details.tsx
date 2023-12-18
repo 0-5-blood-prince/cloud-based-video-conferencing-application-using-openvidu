@@ -25,11 +25,29 @@ const Details = ({ data, columns, expandedColumns }: any) => {
     }
   };
 
+  const sendMeetingDetails =  async (meetingId: any) => {
+    try {
+      const response = await fetch('https://1yb39uhbz6.execute-api.us-east-1.amazonaws.com/TEST/meetings/sendDetails',{
+        method: 'GET', // Specify the HTTP method (GET, POST, PUT, etc.)
+        headers: {
+          'Content-Type': 'application/json', // Example header (modify as needed)
+          'meetingId' : meetingId
+        },
+      });
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    // TODO hit backend to make the details available for other users and mail them
+  };
+
 
   const useStyles = makeStyles({
     accordionContainer: {
       display: 'flex',
-      justifyContent: 'center',
+      // justifyContent: 'center',
       // alignItems: 'center',
       // minHeight: '100vh',
     },
@@ -38,7 +56,7 @@ const Details = ({ data, columns, expandedColumns }: any) => {
       fontWeight: 'bold', // Make column names bold
     },
     accordionContent: {
-      width: '50%',
+      width: '100%',
       textAlign: 'left',
       whiteSpace: 'pre-wrap', // Preserve new lines
     },
@@ -109,6 +127,9 @@ const Details = ({ data, columns, expandedColumns }: any) => {
                               )}
                             </li>
                           ))}
+                          <Button variant="contained" color="secondary" onClick={()=>{sendMeetingDetails(d['Meeting Code'])}}>
+                              Send Meeting Details to other users
+                            </Button>
                         </ul>
                       </Typography>
                     </AccordionDetails>

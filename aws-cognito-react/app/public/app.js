@@ -6,7 +6,9 @@ const Events = {
     AUDIOUNMUTE: 'AUDIOUNMUTE',
     SCREENSHAREON: 'SCREENSHAREON',
     SCREENSHAREOFF: 'SCREENSHAREOFF',
-    LEFTMEETING: 'LEFTMEETING'
+    LEFTMEETING: 'LEFTMEETING',
+    STOPRECORDING: 'STOPRECORDING',
+    STARTRECORDING: 'STARTRECORDING'
   };
 var audioOn = false;
 var videoOn = false;
@@ -94,9 +96,13 @@ $(document).ready(async () => {
      });
     webComponent.addEventListener('onToolbarStopRecordingClicked', (event) => {
         console.log(event);
+        const sessionId = globalSessionId
+        createEvent(sessionId, userId, Events.STOPRECORDING)
     })
     webComponent.addEventListener('onToolbarStartRecordingClicked', (event) => {
         console.log(event);
+        const sessionId = globalSessionId
+        createEvent(sessionId, userId, Events.STARTRECORDING)
     })
     webComponent.addEventListener('onToolbarMicrophoneButtonClicked', (event) => { 
         console.log(event);
@@ -132,6 +138,8 @@ $(document).ready(async () => {
 
 
 async function joinSession() {
+    alert('Disclaimer:    The Video Recording will be analyzed for business purposes.');
+
     
       
     //Getting form inputvalue
@@ -150,7 +158,7 @@ async function joinSession() {
 
 
     // Requesting tokens
-    var promiseResults = await Promise.all([getToken(sessionName, makeHost), getToken(sessionName, makeHost)]);
+    var promiseResults = await Promise.all([getToken(sessionName, makeHost, participantName, userName), getToken(sessionName, makeHost, participantName, userName)]);
     var tokens = { webcam: promiseResults[0], screen: promiseResults[1] };
     console.log(tokens)
 
@@ -221,30 +229,30 @@ function hideForm() {
 
 var APPLICATION_SERVER_URL = "http://54.161.249.204:9000/";
 
-function getToken(mySessionId, makeHost) {
-    return createSession(mySessionId).then(sessionId => createToken(sessionId, makeHost));
+function getToken(mySessionId, makeHost, participantName, userName) {
+    return createSession(mySessionId, participantName, userName).then(sessionId => createToken(sessionId, makeHost, participantName));
 }
 
-function createSession(sessionId) {
+function createSession(sessionId, participantName, userName) {
     return new Promise((resolve, reject) => {
         $.ajax({
             type: "POST",
             url: APPLICATION_SERVER_URL + "api/sessions",
             data: JSON.stringify({ customSessionId: sessionId }),
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "participantName": participantName, "email": userName },
             success: response => resolve(response), // The sessionId
             error: (error) => reject(error)
         });
     });
 }
 
-function createToken(sessionId, makeHost) {
+function createToken(sessionId, makeHost, participantName) {
     return new Promise((resolve, reject) => {
         $.ajax({
             type: 'POST',
             url: APPLICATION_SERVER_URL + 'api/sessions/' + sessionId + '/connections',
             data: JSON.stringify({}),
-            headers: { "Content-Type": "application/json", "makeHost": makeHost },
+            headers: { "Content-Type": "application/json", "makeHost": makeHost, "participantName":participantName },
             success: (response) => resolve(response), // The token
             error: (error) => reject(error)
         });
