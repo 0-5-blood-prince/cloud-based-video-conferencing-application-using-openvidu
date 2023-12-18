@@ -1,0 +1,94 @@
+import json
+import time
+import boto3
+import urllib
+from botocore.exceptions import ClientError
+
+def insert_data(data_list, db=None, table='meeting-analysis'):
+    if not db:
+        db = boto3.resource('dynamodb')
+    table = db.Table(table)
+    # with table.batch_writer() as batch:
+    #     # overwrite if the same index is provided
+    #     for data in data_list:
+    response = table.put_item(Item=data_list)
+    return response
+
+
+def lookup_data(key, db=None, table='meeting-analysis'):
+    if not db:
+        db = boto3.resource('dynamodb')
+    table = db.Table(table)
+    try:
+        response = table.get_item(Key=key)
+        return response['Item']
+    except Exception as e:
+        print('Error', e)
+        return {'meetings': []}
+def getAllItems( db=None, table='meeting-analysis'):
+    if not db:
+        db = boto3.resource('dynamodb')
+    table = db.Table(table)
+    all_items = []
+
+    response = table.scan()
+    all_items.extend(response['Items'])
+    return all_items
+
+
+def lambda_handler(event, context):
+    # TODO implement
+    # print(event)
+    userId = event['headers']["userid"]
+    data = lookup_data({'userId':userId})
+    # print(data)
+    detail_list = []
+    for meeting in data['meetings']:
+        print(meeting)
+        detail = dict()
+        detail["meetingId"] = str(meeting['meetingId'])
+        if 'available' not in data:
+            continue
+        if 'host' not in meeting:
+            continue
+        if int(meeting['host']) == 0 and detail["meetingId"] not in data['available']:
+            continue
+        detail["joinTime"] = str(meeting['joinTime'])
+        detail["exitTime"] = str(meeting['exitTime'])
+        detail["totalActivity"] = str(meeting['TimeSpent'])
+        detail["audioActivity"] = str(meeting['audioActivity'])
+        detail["videoActivity"] = str(meeting['videoActivity'])
+        detail["screenShareActivity"] = str(meeting['screenShareActivity'])
+        detail["host"] = int(meeting['host'])
+        if 'participants' in meeting:
+            detail["participants"] = []
+            for participant in meeting['participants']:
+                detail["participants"].append(participant)
+        transcriptUrl = "https://cvc-meeting-recordings.s3.amazonaws.com/" + detail["meetingId"] + "/" + detail["meetingId"] + "_english_transcript.txt"
+        transcriptS3Url = transcriptUrl
+        print(detail["meetingId"])
+        print(transcriptS3Url)
+        try:
+            response = urllib.request.urlopen(transcriptS3Url)
+            transcript = response.read().decode('utf-8')
+            detail['transcript'] = transcript
+            videoUrl = "https://cvc-meeting-recordings.s3.amazonaws.com/" + detail["meetingId"] + "/" + detail["meetingId"] + ".mp4"
+            detail["videoDownloadurl"] = videoUrl
+        except Exception as e:
+            detail['transcript'] = "Recording not analysed yet"
+            print(e)
+
+
+        detail_list.append(detail)
+
+
+    headers = {
+        "Access-Control-Allow-Origin": "*",  # Replace * with your allowed origin(s)
+        "Access-Control-Allow-Headers": "Content-Type, userid",  # Include allowed headers
+        "Access-Control-Allow-Methods": "OPTIONS,POST,GET"  # Include allowed methods
+    }
+    return {
+        'statusCode': 200,
+        'body': json.dumps({'meetings':detail_list}),
+        'headers': headers
+    }
