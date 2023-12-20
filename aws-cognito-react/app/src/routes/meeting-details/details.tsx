@@ -127,9 +127,11 @@ const Details = ({ data, columns, expandedColumns }: any) => {
                               )}
                             </li>
                           ))}
+                          {d['isHost'] === 1 ? (
                           <Button variant="contained" color="secondary" onClick={()=>{sendMeetingDetails(d['Meeting Code'])}}>
                               Send Meeting Details to other users
-                            </Button>
+                          </Button>) :(<p></p>)
+}
                         </ul>
                       </Typography>
                     </AccordionDetails>

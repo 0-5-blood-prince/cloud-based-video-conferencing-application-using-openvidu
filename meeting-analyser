@@ -1,0 +1,241 @@
+import json
+import os
+import boto3
+from botocore.exceptions import ClientError
+from datetime import datetime, timedelta
+import threading
+import time
+
+from email.mime.text import MIMEText
+from email.mime.application import MIMEApplication
+from email.mime.multipart import MIMEMultipart
+
+DB = boto3.resource(
+   'dynamodb',
+
+)
+
+table_name = "meeting-details"
+
+def lambda_handler(event, context):
+    print(event)
+
+    for record in event['Records']:
+        meeting_id = record['body']
+        meeting_details = lookup_data({'meetingID': meeting_id})
+        participant_array = []
+        email_data = ""
+
+        for participant, interactions in meeting_details["participants"].items():
+
+            temp_time = datetime.strptime(interactions[0][1], "%Y-%m-%d %H:%M:%S")
+            participant_array.append(participant)
+            audio_start = temp_time
+            audio_end = temp_time
+            video_start = temp_time
+            video_end = temp_time
+            screenshare_start = temp_time
+            screenshare_end = temp_time
+            left_meeting = temp_time
+            join_meeting = temp_time
+            join_meeting_first = temp_time
+
+            audio_length = 0
+            video_length = 0
+            screenshare_length = 0
+            meeting_length = 0
+
+            for interaction in interactions:
+                timee = datetime.strptime(interaction[1], "%Y-%m-%d %H:%M:%S")
+                if interaction[0] == "AUDIOUNMUTE":
+                    audio_start = timee
+                    print(interaction)
+
+                elif interaction[0] == "AUDIOMUTE":
+                    audio_end = timee
+                    time_difference = audio_end - audio_start
+                    audio_length += time_difference.total_seconds()
+                    print(interaction)
+
+                elif interaction[0] == "VIDEOUNMUTE":
+                    video_start = timee
+                    print(interaction)
+
+                elif interaction[0] == "VIDEOMUTE":
+                    video_end = timee
+                    time_difference = video_end - video_start
+                    video_length += time_difference.total_seconds()
+                    print(interaction)
+
+                elif interaction[0] == "SCREENSHAREON":
+                    screenshare_start = timee
+                    print(interaction)
+
+                elif interaction[0] == "SCREENSHAREOFF":
+                    screenshare_end = timee
+                    time_difference =  screenshare_end - screenshare_start
+                    screenshare_length += time_difference.total_seconds()
+                    print(interaction)
+
+                elif interaction[0] == "JOINMEETING":
+                    join_meeting = timee
+                    left_meeting = timee
+                    print(interaction)
+
+                elif interaction[0] == "ENDMEETING":
+                    left_meeting = timee
+                    time_difference = left_meeting - join_meeting
+                    meeting_length += time_difference.total_seconds()
+                    print(interaction)
+
+            time_difference = left_meeting - join_meeting
+            if time_difference.total_seconds() <= 0:
+                left_meeting = datetime.strptime(meeting_details["end_time"], "%Y-%m-%d %H:%M:%S")
+                time_difference = left_meeting - join_meeting
+                meeting_length += time_difference.total_seconds()
+
+            time_difference = audio_end - audio_start
+            if time_difference.total_seconds() < 0:
+                time_difference = left_meeting - audio_start
+                audio_length += time_difference.total_seconds()
+
+            time_difference = video_end - video_start
+            if time_difference.total_seconds() < 0:
+                time_difference = left_meeting - video_start
+                video_length += time_difference.total_seconds()
+
+            time_difference = screenshare_end - screenshare_start
+            if time_difference.total_seconds() < 0:
+                time_difference = left_meeting - screenshare_start
+                screenshare_length += time_difference.total_seconds()
+
+            print(audio_length)
+            print(video_length)
+            print(meeting_length)
+            print(screenshare_length)
+            print(join_meeting_first)
+            print(left_meeting)
+            participant_details = lookup_data({'userId': participant}, table = "meeting-analysis")
+
+            host = 0
+            if participant == meeting_details["host"]:
+                host = 1
+                dets = lookup_data({'userId': participant}, table = "email_data")
+                recipient_email = dets["email"]
+                print(recipient_email)
+
+            meeting_data = {
+                "meetingId": str(meeting_id),
+                "joinTime": str(join_meeting_first),
+                "exitTime": str(left_meeting),
+                "TimeSpent": str(meeting_length),
+                "audioActivity": str(audio_length),
+                "videoActivity": str(video_length),
+                "screenShareActivity": str(screenshare_length),
+                "participants": participant_array,
+                "host": host
+            }
+
+            if participant_details == "Error":
+                dynamodb_data = {
+                    'userId': participant,
+                    'meetings': [meeting_data],
+                    'available': []
+                }
+                insert_data(dynamodb_data, table = "meeting-analysis")
+            else:
+                participant_details["meetings"].append(meeting_data)
+                update_item({'userId': participant}, 'meetings', participant_details["meetings"], table = "meeting-analysis")
+
+            dets = lookup_data({'userId': participant}, table = "email_data")
+            email_data += dets["email"] + '\n' + str(meeting_data) + '\n\n'
+
+        send_email(recipient_email, email_data)
+
+    return {
+        'statusCode': 200,
+        'body': json.dumps('Hello from Lambda!')
+    }
+
+def insert_data(data, db=None, table=table_name):
+    if not db:
+        db = DB
+    table = db.Table(table)
+    with table.batch_writer() as batch:
+        # overwrite if the same index is provided
+        response = table.put_item(Item=data)
+    return response
+
+def lookup_data(key, db=None, table=table_name):
+    if not db:
+        db = DB
+    table = db.Table(table)
+    try:
+        response = table.get_item(Key=key)
+    except ClientError as e:
+        print('Error', e.response['Error']['Message'])
+    else:
+        try:
+            return response['Item']
+        except:
+            return "Error"
+
+def update_item(key, feature_key, feature_value, db=None, table=table_name):
+    if not db:
+        db = DB
+    table = db.Table(table)
+    # change student location
+    response = table.update_item(
+        Key=key,
+        UpdateExpression="set #feature=:f",
+        ExpressionAttributeValues={
+            ':f': feature_value
+        },
+        ExpressionAttributeNames={
+            "#feature": feature_key
+        },
+        ReturnValues="UPDATED_NEW"
+    )
+    return response
+
+def delete_item(key, db=None, table=table_name):
+    if not db:
+        db = DB
+    table = db.Table(table)
+    try:
+        response = table.delete_item(Key=key)
+    except ClientError as e:
+        print('Error', e.response['Error']['Message'])
+    else:
+        return response
+
+def send_email(recipient_email, body):
+    CHARSET = "utf-8"
+    client = boto3.client('ses')
+    Sender = "ag4797@columbia.edu"
+    msg = MIMEMultipart('mixed')
+    msg['Subject'] = "Meeting details"
+    msg['From'] = Sender
+    msg['To'] = recipient_email
+
+    msg_body = MIMEMultipart('alternative')
+
+    textpart = MIMEText(body.encode(CHARSET), 'plain', CHARSET)
+
+    msg_body.attach(textpart)
+    msg.attach(msg_body)
+
+    try:
+        response = client.send_raw_email(
+            Source=Sender,
+            Destinations=[
+                recipient_email
+            ],
+            RawMessage={
+                'Data':msg.as_string(),
+            })
+    except ClientError as e:
+        print(e.response['Error']['Message'])
+    else:
+        print("Email sent! Message ID:"),
+        print(response['MessageId'])

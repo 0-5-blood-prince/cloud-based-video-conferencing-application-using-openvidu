@@ -44,7 +44,7 @@ interface MeetingData {
 }
 export default function Home() {
   const columns = ['Meeting Code', 'Join Time', 'Exit Time', 'Audio Activity', 'Video Activity']; // Your column names
-  const expandedColumns = ['Meeting Code', 'Join Time', 'Exit Time', 'Audio Activity', 'Video Activity', 'Screen Share Activity',  'Video Download Url','Transcript']; // Your column names
+  const expandedColumns = ['Meeting Code', 'Join Time', 'Exit Time', 'Audio Activity', 'Video Activity', 'Screen Share Activity',  'Video Download Url','Transcript', 'Chat GPT Summary', 'German Transcript', 'Hindi Transcript', 'Spanish Transcript']; // Your column names
 
   const [data, setData] = useState<MeetingData[]>([]);
 
@@ -90,7 +90,13 @@ export default function Home() {
             'Video Activity': meeting.videoActivity,
             'Screen Share Activity': meeting.screenShareActivity,
             'Transcript': meeting.transcript,
-            'Video Download Url': meeting.videoDownloadurl
+            'Video Download Url': meeting.videoDownloadurl,
+            'Chat GPT Summary': meeting.chatgptAnalysis,
+            'German Transcript': meeting.germanTranscript, 
+            'Hindi Transcript': meeting.hindiTranscript, 
+            'Spanish Transcript': meeting.spanishTranscript,
+            'isHost': meeting.host
+
           }
           i+=1
           responseData.push(detail)
